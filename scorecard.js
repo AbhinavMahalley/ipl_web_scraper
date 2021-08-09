@@ -27,7 +27,18 @@ function cb(error, response, html) {
         // search tool
     let searchTool=cheerio.load(html);
     // css selector
-    let bothIningArr=searchTool(".Collapsible");
+    
+        let  descElem=searchTool(".event .description");
+        let result =searchTool(".event .status-text");
+        let stringArr=descElem.text().split(",");
+        let venue=stringArr[1].trim();
+        let date=stringArr[2].trim();
+        result =result.text();
+
+        // console.log(venue+" "+date);
+        // console.log(result);
+
+        let bothIningArr=searchTool(".Collapsible");
 
     for(let i=0;i<bothIningArr.length;i++){
 
@@ -36,24 +47,42 @@ function cb(error, response, html) {
 
         teamName=teamName.split("INNINGS")[0];
         teamName=teamName.trim();
-        console.log(" \t",teamName);
+        // console.log(" \t",teamName);
+
+        let opponetIndex=i==0?1:0;
+        let opponentName=searchTool(bothIningArr[opponetIndex]).find("h5").text();
+        opponentName=opponentName.split("INNINGS")[0].trim();
+        
+
+        console.log(`${venue} ${date} ||  ${teamName}  vs  ${opponentName} || ${result}`)
+
 
         let batsManTableBodyAllRows=searchTool(bothIningArr[i]).find(".table.batsman tbody tr");
         for(let j=0;j<batsManTableBodyAllRows.length;j++){
-            let numberofTds=searchTool(batsManTableBodyAllRows[j]).find("td");
-            // console.log(numberofTds);
-            if(numberofTds.length==8){
+            let allCols=searchTool(batsManTableBodyAllRows[j]).find("td");
+            let isWorthy=searchTool(allCols[0]).hasClass("batsman-cell");
+            // console.log(isWorthy);
+            if(isWorthy==true){
                 //valid
-                let playerName=searchTool(numberofTds[0]).text();
-                console.log(playerName);
+                let playerName=searchTool(allCols[0]).text().trim();
+                let runs=searchTool(allCols[2]).text().trim();
+                let balls=searchTool(allCols[3]).text().trim();
+                let fours=searchTool(allCols[5]).text().trim();
+                let sixes=searchTool(allCols[6]).text().trim();
+                let sr=searchTool(allCols[7]).text().trim();
+                console.log(`${playerName}  ${runs} ${balls} ${fours} ${sixes} ${sr}`);
             }
         }
         console.log("```````````````````````````````````````");
     }
     
 
+    console.log("/////////////////////////////////////////////////////");
+
     }
 
+
+
     module.exports={
-        pro:processSinglematch
+        process:processSinglematch
     }
