@@ -1,6 +1,8 @@
 let request = require("request");
 let cheerio=require("cheerio");
-let fs=require("fs");
+let fs= require("fs");
+let path=require("path");
+let xlsx=require("xlsx");
 
 // let url='https://www.espncricinfo.com/series/ipl-2020-21-1210595/delhi-capitals-vs-mumbai-indians-final-1237181/full-scorecard';
 
@@ -12,7 +14,7 @@ function cb(error, response, html) {
     
     if(error){
         console.log(error);
-    }if(response.statusCode==404){
+    }else if(response.statusCode==404){
         console.log("Page not found");
     }
     else{
@@ -71,17 +73,62 @@ function cb(error, response, html) {
                 let sixes=searchTool(allCols[6]).text().trim();
                 let sr=searchTool(allCols[7]).text().trim();
                 console.log(`${playerName}  ${runs} ${balls} ${fours} ${sixes} ${sr}`);
+                processPlayer(teamName,playerName,runs,balls,fours,sixes,sr,opponentName,venue,date,result);
             }
         }
         console.log("```````````````````````````````````````");
     }
-    
-
     console.log("/////////////////////////////////////////////////////");
+}
 
+
+
+
+
+
+function processPlayer(teamName,playerName,runs,balls,fours,sixes,sr,opponentName,venue,date,result){
+let teamPath=path.join(__dirname,"ipl",teamName);
+dirCreater(teamPath);
+let filePath=path.join(teamPath,playerName+".xlsx");
+let content=excelReader(filePath,playerName);
+let playerObj={
+  "teamName":teamName,
+    "palyerName":playerName,
+   "runs":runs,
+    "balls":balls,
+   "fours":fours,
+   "sixes":sixes,
+    "opponentName":opponentName,
+    "venue":venue,
+   "date":date,
+   "result":result
+}
+content.push(playerObj);
+excelWriter(filePath,content,playerName);
+}
+
+function dirCreater(filePath){
+    if(fs.existsSync(filePath)==false){
+        fs.mkdirSync(filePath);
     }
+}
 
+function excelWriter(filePath,json,sheetName){
+    let newWB=xlsx.utils.book_new();
+    let newWS=xlsx.utils.json_to_sheet(json);
+    xlsx.utils.book_append_sheet(newWB,newWS,sheetName);
+    xlsx.writeFile(newWB,filePath);
+}
 
+function excelReader(filePath,sheetName){
+    if(fs.existsSync(filePath)==false){
+        return [];
+    }
+    let wb=xlsx.readFile(filePath);
+    let excelData=wb.Sheets[sheetName];
+    let ans=xlsx.utils.sheet_to_json(excelData);
+    return ans;
+}
 
     module.exports={
         process:processSinglematch

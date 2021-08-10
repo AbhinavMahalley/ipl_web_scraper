@@ -10,13 +10,13 @@ function allMatchPageCb(url) {
 
     if(error){
         console.log(error);
-    }if(response.statusCode==404){
+    }else if(response.statusCode==404){
         console.log("Page not found");
     }
     else{
         getAllScoreCardLink(html);
     }
-})
+ })
     }
 
     function getAllScoreCardLink(html){

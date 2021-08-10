@@ -1,11 +1,16 @@
 
-
 let request = require("request");
 let cheerio=require("cheerio");
 let allMatchObj=require("./allMatch")
+let fs= require("fs");
+let path=require("path");
+
+let iplPath=path.join(__dirname,"ipl");
+dirCreater(iplPath);
 
 let url='https://www.espncricinfo.com/series/ipl-2020-21-1210595';
-console.log("before");
+
+// console.log("before");
 
 request(url,cb);
 function cb(error, response, html) {
@@ -34,6 +39,10 @@ function cb(error, response, html) {
     
 }
 
+ // console.log("after");
 
-
-    console.log("after");
+ function dirCreater(filePath){
+     if(fs.existsSync(filePath)==false){
+         fs.mkdirSync(filePath);
+     }
+ }
